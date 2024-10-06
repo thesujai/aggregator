@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/thesujai/aggregator/internal/auth"
 	"github.com/thesujai/aggregator/internal/database"
 )
 
@@ -35,4 +36,21 @@ func (apiCfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Error creating user %v", err), http.StatusBadRequest)
 	}
 	RespondWithJSON(w, http.StatusCreated, User(user))
+}
+
+func (apiCfg *apiConfig) getUser(w http.ResponseWriter, r *http.Request) {
+	api_key, err := auth.GetApiKey(r)
+
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	user, err := apiCfg.DB.GetUser(r.Context(), api_key)
+	if err != nil {
+		http.Error(w, "user doesn't exists", 400)
+		return
+	}
+
+	RespondWithJSON(w, http.StatusFound, User(user))
 }

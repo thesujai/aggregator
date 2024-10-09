@@ -9,9 +9,11 @@ func registerRoutes() http.Handler {
 	publicMux.Handle("GET /healthz", http.HandlerFunc(systemHealth))
 	publicMux.Handle("POST /users", http.HandlerFunc(cfg.createUser))
 	publicMux.Handle("GET /users", http.HandlerFunc(cfg.getUser))
+	publicMux.Handle("GET /feeds", http.HandlerFunc(cfg.getAllFeeds))
 
 	protectedMux := http.NewServeMux()
 	protectedMux.Handle("POST /feeds", http.HandlerFunc(cfg.createFeed))
+	protectedMux.Handle("GET /feeds", http.HandlerFunc(cfg.getFeedByUser))
 
 	mux := http.NewServeMux()
 	mux.Handle("/", use(protectedMux, cfg.authUser))

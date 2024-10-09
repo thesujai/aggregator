@@ -5,3 +5,9 @@ RETURNING *;
 
 -- name: GetAllFeeds :many
 Select * from feeds;
+
+-- name: GetFeedByUser :many
+
+Select * from feeds where user_id = (
+    Select id from users where api_key=$1
+);

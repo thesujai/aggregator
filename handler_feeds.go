@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/thesujai/aggregator/internal/auth"
 	"github.com/thesujai/aggregator/internal/database"
 )
 
@@ -54,4 +55,18 @@ func (cfg *apiConfig) getAllFeeds(w http.ResponseWriter, r *http.Request) {
 
 	RespondWithJSON(w, http.StatusOK, feeds)
 
+}
+
+func (cfg *apiConfig) getFeedByUser(w http.ResponseWriter, r *http.Request) {
+	api_key, err := auth.GetApiKey(r)
+	if err != nil {
+		http.Error(w, "user doesn't exists", http.StatusNotFound)
+		return
+	}
+	feeds, err := cfg.DB.GetFeedByUser(r.Context(), api_key)
+	if err != nil {
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+	RespondWithJSON(w, http.StatusOK, feeds)
 }

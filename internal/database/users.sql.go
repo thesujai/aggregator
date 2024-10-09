@@ -61,3 +61,14 @@ func (q *Queries) GetUser(ctx context.Context, apiKey string) (User, error) {
 	)
 	return i, err
 }
+
+const getUserId = `-- name: GetUserId :one
+Select id from users where api_key=$1
+`
+
+func (q *Queries) GetUserId(ctx context.Context, apiKey string) (uuid.UUID, error) {
+	row := q.db.QueryRowContext(ctx, getUserId, apiKey)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}

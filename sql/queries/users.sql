@@ -8,3 +8,6 @@ RETURNING *;
 
 -- name: GetUser :one
 Select * from users where api_key=$1;
+
+-- name: GetUserId :one
+Select id from users where api_key=$1;

@@ -7,7 +7,11 @@ RETURNING *;
 Select * from feeds;
 
 -- name: GetFeedByUser :many
-
 Select * from feeds where user_id = (
     Select id from users where api_key=$1
+);
+
+-- name: GetFollowedFeeds :many
+Select * from feeds where id in (
+    Select feed_id from feedfollows where feedfollows.user_id=$1
 );

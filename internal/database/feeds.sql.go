@@ -118,3 +118,39 @@ func (q *Queries) GetFeedByUser(ctx context.Context, apiKey string) ([]Feed, err
 	}
 	return items, nil
 }
+
+const getFollowedFeeds = `-- name: GetFollowedFeeds :many
+Select id, created_at, updated_at, name, url, user_id from feeds where id in (
+    Select feed_id from feedfollows where feedfollows.user_id=$1
+)
+`
+
+func (q *Queries) GetFollowedFeeds(ctx context.Context, userID uuid.UUID) ([]Feed, error) {
+	rows, err := q.db.QueryContext(ctx, getFollowedFeeds, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Feed
+	for rows.Next() {
+		var i Feed
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+			&i.Url,
+			&i.UserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

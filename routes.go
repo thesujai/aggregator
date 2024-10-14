@@ -14,6 +14,7 @@ func registerRoutes() http.Handler {
 	protectedMux := http.NewServeMux()
 	protectedMux.Handle("POST /feeds", http.HandlerFunc(cfg.createFeed))
 	protectedMux.Handle("GET /feeds", http.HandlerFunc(cfg.getFeedByUser))
+	protectedMux.Handle("GET /followedfeeds", http.HandlerFunc(cfg.getFollowedFeeds))
 	protectedMux.Handle("POST /followfeed", http.HandlerFunc(cfg.followFeed))
 
 	mux := http.NewServeMux()

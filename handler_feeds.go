@@ -57,6 +57,9 @@ func (cfg *apiConfig) getAllFeeds(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// TODO: feeds should be type casted to the Feed defined in this file for json compatibility
+// so should be done with a loop, make sure the loop is concurrent
+
 func (cfg *apiConfig) getFeedByUser(w http.ResponseWriter, r *http.Request) {
 	api_key, err := auth.GetApiKey(r)
 	if err != nil {
@@ -67,6 +70,15 @@ func (cfg *apiConfig) getFeedByUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
+	}
+	RespondWithJSON(w, http.StatusOK, feeds)
+}
+
+func (cfg *apiConfig) getFollowedFeeds(w http.ResponseWriter, r *http.Request) {
+	userId, _ := uuid.Parse(w.Header().Get("userID"))
+	feeds, err := cfg.DB.GetFollowedFeeds(r.Context(), userId)
+	if err != nil {
+		RespondWithError(w, 400, "no feeds following")
 	}
 	RespondWithJSON(w, http.StatusOK, feeds)
 }

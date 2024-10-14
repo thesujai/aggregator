@@ -10,15 +10,15 @@ type Error struct {
 	Error string `json:"error"`
 }
 
-func RespondWithError(w http.ResponseWriter, code int, err error) {
+func RespondWithError(w http.ResponseWriter, code int, errorMessage string) {
 	w.Header().Set("Content-Type", "application/json")
-	if code < 500 {
-		fmt.Println("Unexpected Error: ", err)
+	if code >= 500 {
+		fmt.Println("Unexpected Error: ", errorMessage)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 	json_body, err := json.Marshal(Error{
-		Error: string(err.Error()),
+		Error: errorMessage,
 	})
 	if err != nil {
 		fmt.Println("Unexpected Error: ", err)

@@ -159,30 +159,22 @@ func (q *Queries) GetFollowedFeeds(ctx context.Context, userID uuid.UUID) ([]Fee
 }
 
 const getNextFeedsToFetch = `-- name: GetNextFeedsToFetch :many
-Select id, created_at, updated_at, name, url, user_id, last_fetched_at from feeds ORDER BY last_fetched_at ASC NULLS FIRST LIMIT $1
+Select url from feeds ORDER BY last_fetched_at ASC NULLS FIRST LIMIT $1
 `
 
-func (q *Queries) GetNextFeedsToFetch(ctx context.Context, limit int32) ([]Feed, error) {
+func (q *Queries) GetNextFeedsToFetch(ctx context.Context, limit int32) ([]string, error) {
 	rows, err := q.db.QueryContext(ctx, getNextFeedsToFetch, limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Feed
+	var items []string
 	for rows.Next() {
-		var i Feed
-		if err := rows.Scan(
-			&i.ID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Name,
-			&i.Url,
-			&i.UserID,
-			&i.LastFetchedAt,
-		); err != nil {
+		var url string
+		if err := rows.Scan(&url); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, url)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

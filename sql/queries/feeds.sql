@@ -18,3 +18,6 @@ Select * from feeds where id in (
 
 -- name: GetNextFeedsToFetch :many
 Select * from feeds ORDER BY last_fetched_at ASC NULLS FIRST LIMIT $1;
+
+-- name: MarkFeedFetched :exec
+UPDATE feeds SET last_fetched_at=NOW() and updated_at=NOW();

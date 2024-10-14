@@ -15,3 +15,6 @@ Select * from feeds where user_id = (
 Select * from feeds where id in (
     Select feed_id from feedfollows where feedfollows.user_id=$1
 );
+
+-- name: GetNextFeedsToFetch :many
+Select * from feeds ORDER BY last_fetched_at ASC NULLS FIRST LIMIT $1;

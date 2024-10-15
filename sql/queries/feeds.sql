@@ -17,7 +17,7 @@ Select * from feeds where id in (
 );
 
 -- name: GetNextFeedsToFetch :many
-Select url from feeds ORDER BY last_fetched_at ASC NULLS FIRST LIMIT $1;
+Select id, url from feeds ORDER BY last_fetched_at ASC NULLS FIRST LIMIT $1;
 
 -- name: MarkFeedFetched :exec
-UPDATE feeds SET last_fetched_at=NOW() and updated_at=NOW();
+UPDATE feeds SET last_fetched_at=NOW(), updated_at=NOW() where id=$1;

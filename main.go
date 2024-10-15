@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/thesujai/aggregator/internal/database"
 
@@ -46,6 +47,7 @@ func main() {
 		Addr:    ":" + port,
 		Handler: registerRoutes(),
 	}
+	go processFeeds(GetAPIConfig().DB, 10, time.Minute)
 	fmt.Printf("Server Running and Listening on %v\n", serv.Addr)
 	err := serv.ListenAndServe()
 	if err != nil {

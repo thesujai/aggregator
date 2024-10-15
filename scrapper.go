@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
-	"log"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/thesujai/aggregator/internal/database"
 )
 
@@ -52,23 +53,38 @@ func fetchFeed(url string) (RSSFeed, error) {
 func processFeeds(db *database.Queries, concurrency int32, timeBetweenRequest time.Duration) {
 	ticker := time.Tick(timeBetweenRequest)
 	for ; ; <-ticker {
-		feedUrlToFetch, err := db.GetNextFeedsToFetch(context.Background(), concurrency)
+		feedsToFetch, err := db.GetNextFeedsToFetch(context.Background(), concurrency)
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
 		var wg sync.WaitGroup
-		for i := 0; i < len(feedUrlToFetch); i++ {
+		for _, fetchedFeed := range feedsToFetch {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				feed, err := fetchFeed(feedUrlToFetch[i])
+				feed, err := fetchFeed(fetchedFeed.Url)
+				if err != nil {
+					fmt.Print(err)
+				}
+				err = db.MarkFeedFetched(context.Background(), fetchedFeed.ID)
 				if err != nil {
 					fmt.Println(err)
 				}
 				for _, item := range feed.Channel.Item {
-					log.Println("Found post", item.Title)
-					log.Println(item.PubDate)
+					err := db.AddPost(context.Background(), database.AddPostParams{
+						ID:          uuid.New(),
+						CreatedAt:   time.Now(),
+						UpdatedAt:   time.Now(),
+						Title:       item.Title,
+						Url:         item.Link,
+						Description: item.Description,
+						PublishedAt: item.PubDate,
+						FeedID:      fetchedFeed.ID,
+					})
+					if err != nil && !strings.Contains(err.Error(), "duplicate key") {
+						fmt.Println("Error Occured", err)
+					}
 				}
 
 			}()

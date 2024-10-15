@@ -24,7 +24,7 @@ type AddPostParams struct {
 	Title       string
 	Url         string
 	Description string
-	PublishedAt time.Time
+	PublishedAt string
 	FeedID      uuid.UUID
 }
 

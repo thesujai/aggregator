@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/thesujai/aggregator/internal/auth"
 	"github.com/thesujai/aggregator/internal/database"
+	"github.com/thesujai/aggregator/internal/utils"
 )
 
 type User struct {
@@ -19,7 +20,7 @@ type User struct {
 	ApiKey    string    `json:"api_key"`
 }
 
-func (apiCfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
+func (apiCfg *Config) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var p User
 	err := json.NewDecoder(r.Body).Decode(&p)
 	if err != nil {
@@ -35,10 +36,10 @@ func (apiCfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error creating user %v", err), http.StatusBadRequest)
 	}
-	RespondWithJSON(w, http.StatusCreated, User(user))
+	utils.RespondWithJSON(w, http.StatusCreated, User(user))
 }
 
-func (apiCfg *apiConfig) getUser(w http.ResponseWriter, r *http.Request) {
+func (apiCfg *Config) GetUser(w http.ResponseWriter, r *http.Request) {
 	api_key, err := auth.GetApiKey(r)
 
 	if err != nil {
@@ -52,5 +53,5 @@ func (apiCfg *apiConfig) getUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	RespondWithJSON(w, http.StatusFound, User(user))
+	utils.RespondWithJSON(w, http.StatusFound, User(user))
 }

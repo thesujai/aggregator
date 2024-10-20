@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"database/sql"
@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/thesujai/aggregator/internal/auth"
 	"github.com/thesujai/aggregator/internal/database"
+	"github.com/thesujai/aggregator/internal/utils"
 )
 
 type Feeds struct {
@@ -21,63 +22,68 @@ type Feeds struct {
 	LastFetchedAt sql.NullTime `json:"last_fetched_at"`
 }
 
-func (cfg *apiConfig) createFeed(w http.ResponseWriter, r *http.Request) {
+func (cfg *Config) CreateFeed(w http.ResponseWriter, r *http.Request) {
 	feed := Feeds{}
 	err := json.NewDecoder(r.Body).Decode(&feed)
 	if err != nil {
 		http.Error(w, "invalid request body", 400)
 		return
 	}
-	user_id, err := uuid.Parse(w.Header().Get("userID"))
+
+	userID, err := uuid.Parse(w.Header().Get("userID"))
 	if err != nil {
-		http.Error(w, "user doesn't exists", http.StatusNotFound)
+		http.Error(w, "user doesn't exist", http.StatusNotFound)
 		return
 	}
-	new_feed, err := cfg.DB.CreateFeeds(r.Context(), database.CreateFeedsParams{
+
+	newFeed, err := cfg.DB.CreateFeeds(r.Context(), database.CreateFeedsParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 		Name:      feed.Name,
 		Url:       feed.Url,
-		UserID:    user_id,
+		UserID:    userID,
 	})
 	if err != nil {
 		http.Error(w, "feed already exists", http.StatusBadRequest)
 		return
 	}
-	RespondWithJSON(w, http.StatusCreated, Feeds(new_feed))
+
+	utils.RespondWithJSON(w, http.StatusCreated, Feeds(newFeed))
 }
 
-func (cfg *apiConfig) getAllFeeds(w http.ResponseWriter, r *http.Request) {
+func (cfg *Config) GetAllFeeds(w http.ResponseWriter, r *http.Request) {
 	feeds, err := cfg.DB.GetAllFeeds(r.Context())
 	if err != nil {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	RespondWithJSON(w, http.StatusOK, feeds)
-
+	utils.RespondWithJSON(w, http.StatusOK, feeds)
 }
 
-func (cfg *apiConfig) getFeedByUser(w http.ResponseWriter, r *http.Request) {
-	api_key, err := auth.GetApiKey(r)
+func (cfg *Config) GetFeedByUser(w http.ResponseWriter, r *http.Request) {
+	apiKey, err := auth.GetApiKey(r)
 	if err != nil {
-		http.Error(w, "user doesn't exists", http.StatusNotFound)
+		http.Error(w, "user doesn't exist", http.StatusNotFound)
 		return
 	}
-	feeds, err := cfg.DB.GetFeedByUser(r.Context(), api_key)
+
+	feeds, err := cfg.DB.GetFeedByUser(r.Context(), apiKey)
 	if err != nil {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
-	RespondWithJSON(w, http.StatusOK, convertDBStructSliceToResponseStructSlice(feeds, Feeds{}))
+
+	utils.RespondWithJSON(w, http.StatusOK, utils.ConvertDBStructSliceToResponseStructSlice(feeds, Feeds{}))
 }
 
-func (cfg *apiConfig) getFollowedFeeds(w http.ResponseWriter, r *http.Request) {
-	userId, _ := uuid.Parse(w.Header().Get("userID"))
-	feeds, err := cfg.DB.GetFollowedFeeds(r.Context(), userId)
+func (cfg *Config) GetFollowedFeeds(w http.ResponseWriter, r *http.Request) {
+	userID, _ := uuid.Parse(w.Header().Get("userID"))
+	feeds, err := cfg.DB.GetFollowedFeeds(r.Context(), userID)
 	if err != nil {
-		RespondWithError(w, 400, "no feeds following")
+		utils.RespondWithError(w, 400, "no feeds following")
 	}
-	RespondWithJSON(w, http.StatusOK, convertDBStructSliceToResponseStructSlice(feeds, Feeds{}))
+
+	utils.RespondWithJSON(w, http.StatusOK, utils.ConvertDBStructSliceToResponseStructSlice(feeds, Feeds{}))
 }

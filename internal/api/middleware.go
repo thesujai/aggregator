@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"log"
@@ -17,7 +17,7 @@ func use(handler http.Handler, middlewares ...Middleware) http.Handler {
 	return handler
 }
 
-func (cfg *apiConfig) logger(next http.Handler) http.Handler {
+func (cfg *Config) Logger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		log.Printf("%s %s %v", r.Method, r.URL.Path, time.Since(start))
@@ -25,21 +25,21 @@ func (cfg *apiConfig) logger(next http.Handler) http.Handler {
 	})
 }
 
-func (cfg *apiConfig) authUser(next http.Handler) http.Handler {
+func (cfg *Config) AuthUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		api_key, err := auth.GetApiKey(r)
-
+		apiKey, err := auth.GetApiKey(r)
 		if err != nil {
 			http.Error(w, err.Error(), 400)
 			return
 		}
 
-		user_id, err := cfg.DB.GetUserId(r.Context(), api_key)
+		userID, err := cfg.DB.GetUserId(r.Context(), apiKey)
 		if err != nil {
-			http.Error(w, "user doesn't exists", 400)
+			http.Error(w, "user doesn't exist", 400)
 			return
 		}
-		w.Header().Set("userID", user_id.String())
+
+		w.Header().Set("userID", userID.String())
 		next.ServeHTTP(w, r)
 	})
 }

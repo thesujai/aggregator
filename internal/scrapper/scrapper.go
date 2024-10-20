@@ -1,4 +1,4 @@
-package main
+package scrapper
 
 import (
 	"context"
@@ -50,7 +50,7 @@ func fetchFeed(url string) (RSSFeed, error) {
 	return feed, nil
 }
 
-func processFeeds(db *database.Queries, concurrency int32, timeBetweenRequest time.Duration) {
+func ProcessFeeds(db *database.Queries, concurrency int32, timeBetweenRequest time.Duration) {
 	ticker := time.Tick(timeBetweenRequest)
 	for ; ; <-ticker {
 		feedsToFetch, err := db.GetNextFeedsToFetch(context.Background(), concurrency)

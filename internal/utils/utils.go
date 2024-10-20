@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 // We could have used generics to pass a converter func that takes []any and returns []any
 // The converter should have been implemented for each type though
 // Below Works for now!!
-func convertDBStructSliceToResponseStructSlice(dbSlice interface{}, responseStruct interface{}) interface{} {
+func ConvertDBStructSliceToResponseStructSlice(dbSlice interface{}, responseStruct interface{}) interface{} {
 	dbSliceVal := reflect.ValueOf(dbSlice)
 	responseSliceType := reflect.TypeOf(responseStruct)
 	fmt.Println("responseSliceType", responseSliceType)

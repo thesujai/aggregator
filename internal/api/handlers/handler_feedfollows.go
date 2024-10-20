@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -7,18 +7,19 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/thesujai/aggregator/internal/database"
+	"github.com/thesujai/aggregator/internal/utils"
 )
 
 type FeedID struct {
 	FeedId uuid.UUID `json:"feed_id"`
 }
 
-func (cfg *apiConfig) followFeed(w http.ResponseWriter, r *http.Request) {
+func (cfg *Config) FollowFeed(w http.ResponseWriter, r *http.Request) {
 	userId, _ := uuid.Parse(w.Header().Get("userID"))
 	feedId := FeedID{}
 	err := json.NewDecoder(r.Body).Decode(&feedId)
 	if err != nil {
-		RespondWithError(w, 400, "feed_id should be a uuid")
+		utils.RespondWithError(w, 400, "feed_id should be a uuid")
 		return
 	}
 	err = cfg.DB.FollowFeed(r.Context(), database.FollowFeedParams{
@@ -29,9 +30,9 @@ func (cfg *apiConfig) followFeed(w http.ResponseWriter, r *http.Request) {
 		FeedID:    feedId.FeedId,
 	})
 	if err != nil {
-		RespondWithError(w, 400, err.Error())
+		utils.RespondWithError(w, 400, err.Error())
 		return
 	}
-	RespondWithJSON(w, 201, struct{}{})
+	utils.RespondWithJSON(w, 201, struct{}{})
 
 }

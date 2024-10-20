@@ -16,7 +16,7 @@ This is a simple RSS Feed Aggregator built in Go. It collects, stores, and allow
 3. Run the following commands:
 ```bash
 go mod vendor
-go build && ./aggregator
+go build -o aggregator ./cmd/aggregator && ./aggregator
 ```
 
 ## API
